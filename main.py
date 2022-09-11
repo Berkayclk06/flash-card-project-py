@@ -3,16 +3,26 @@ import pandas
 import random
 
 data = pandas.read_csv("data/french_words.csv")
-french_dict = {row.French: row.English for (index, row) in data.iterrows()}
+to_learn = data.to_dict(orient="records")
+current_card = {}
 
 BACKGROUND_COLOR = "#B1DDC6"
 
-b = random.choice(list(french_dict))
 
 def new_card():
-    global word_text
-    a = random.choice(list(french_dict))
-    canvas_f.itemconfig(word_text, text=a)
+    global current_card, flip_timer
+    window.after_cancel(flip_timer)
+    current_card = random.choice(to_learn)
+    canvas.itemconfig(card_title, text="French", fill="black")
+    canvas.itemconfig(card_word, text=current_card["French"], fill="black")
+    canvas.itemconfig(canvas_image, image=cardf_img)
+    flip_timer = window.after(3000, flip_card)
+
+
+def flip_card():
+    canvas.itemconfig(card_title, text="English", fill="white")
+    canvas.itemconfig(card_word, text=current_card["English"], fill="white")
+    canvas.itemconfig(canvas_image, image=cardb_img)
 
 # ---------------------------- UI SETUP ------------------------------- #
 
@@ -26,11 +36,14 @@ window.config(padx=50, pady=50, bg=BACKGROUND_COLOR)
 cardf_img = PhotoImage(file="images/card_front.png")
 cardb_img = PhotoImage(file="images/card_back.png")
 
-canvas_f = Canvas(width=800, height=526, bg=BACKGROUND_COLOR, highlightthickness=0)
-canvas_f.create_image(400, 263, image=cardf_img)
-canvas_f.grid(column=0, row=0, columnspan=2)
-lang_text = canvas_f.create_text(400, 150, text="French", fill="black", font=("Ariel", 40, "italic"))
-word_text = canvas_f.create_text(400, 263, text=b, fill="black", font=("Ariel", 60, "bold"))
+flip_timer = window.after(3000, flip_card)
+
+canvas = Canvas(width=800, height=526, bg=BACKGROUND_COLOR, highlightthickness=0)
+canvas_image = canvas.create_image(400, 263, image=cardf_img)
+canvas.grid(column=0, row=0, columnspan=2)
+card_title = canvas.create_text(400, 150, text="French", fill="black", font=("Ariel", 40, "italic"))
+card_word = canvas.create_text(400, 263, text="", fill="black", font=("Ariel", 60, "bold"))
+
 
 # Buttons
 
